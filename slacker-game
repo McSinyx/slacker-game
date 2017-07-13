@@ -24,220 +24,189 @@ from random import choice, randint
 import pygame
 from pygame.locals import *
 
-BOARD_SIZE = BOARD_WIDTH, BOARD_HEIGHT = 7, 15
-SCREEN_SIZE = SCREEN_WIDTH, SCREEN_HEIGHT = 280, 600
-TILE_SIZE = TILE_WIDTH, TILE_HEIGHT = SCREEN_WIDTH / BOARD_WIDTH, SCREEN_HEIGHT / BOARD_HEIGHT
 
-TILE_COLOR = (127, 127, 255)
-TILE_COLOR_ALT = (255, 127, 127)
-TILE_COLOR_LOSE = (64, 64, 128)
-TILE_COLOR_ALT_LOSE = (127, 64, 64)
-BLACK = (0,0,0)
+class SlackerMissedTile:
+    def __init__(self, x, y, time):
+        #self.x. self.y, self.time = x, y, time
+        self.x = x
+        self.y = y
+        self.time = time
 
-LEVEL_SPEED = (80, 80, 75, 75, 70, 70, 65, 60, 55, 50, 45, 40, 35, 30, 32)
-MAX_WIDTH = (3,)*4 + (2,)*4 + (1,)*7
-
-COLOR_CHANGE_Y = 5  # blocks below which are displayed in the alternate color
-WIN_LEVEL = len(MAX_WIDTH)
-
-current_speed = 50 # Current tile speed in milliseconds
-board = []
-lose_tiles = []
-current_direction = 1
-current_x, current_y, current_width = 0, BOARD_HEIGHT - 1, 3
-current_level = 0
-
-INTRO, PLAYING, LOSE, WIN = range(4)
-
-game_state = INTRO
-
-bg_images = [pygame.image.load('data/_{}.png'.format(i)) for i in ('intro', 'game', 'lose', 'win')]
-
-bg_images[WIN].set_colorkey(BLACK)
-bg_images[LOSE].set_colorkey(BLACK)
-
-keep_running = True
-last_time = 0
-
-def main():
-    global game_state, current_x, current_y, current_speed, keep_running, current_width, current_level, current_direction
-
-    pygame.init()
-    screen = pygame.display.set_mode(SCREEN_SIZE)
-
-    reset_game()
-
-    while(keep_running):
-        update_movement()
-        update_board_info()
-        update_screen(screen)
-
-        for event in pygame.event.get():
-            if event.type == pygame.QUIT:
-                keep_running = False
-            elif event.type == KEYDOWN:
-                if event.key in (K_RETURN, K_SPACE):
-                    key_hit()
-                elif event.key in (K_ESCAPE, K_q):
-                    if game_state == INTRO:
-                        keep_running = False
-                    else:
-                        reset_game()
-                # Yes, this is a cheat.
-                elif event.key == K_F1 and current_width < BOARD_WIDTH:
-                    current_x -= current_direction
-                    current_width += 1
-
-    pygame.display.quit()
-
-def reset_game():
-    global game_state, current_x, current_y, current_speed, keep_running, current_width, current_level, lose_tiles
-
-    clear_board()
-    lose_tiles = []
-
-    keep_running = True
-
-    game_state = INTRO
-
-    current_x = 0
-    current_y = BOARD_HEIGHT - 1
-    current_level = 0
-    current_speed = LEVEL_SPEED[current_level]
-    current_width = MAX_WIDTH[current_level]
-
-def key_hit():
-    global keep_running, game_state, current_x, current_y, current_width, current_speed, current_level, lose_tiles
-
-    if game_state == PLAYING:
-        if current_y < BOARD_HEIGHT - 1:
-            for x in range(max(0, current_x), min(current_x + current_width, BOARD_WIDTH)):
-                if board[x][current_y + 1] == 0: # If they're standing on a block that did not work
-                    current_width -= 1 # Then next time, give them one less block
-                    board[x][current_y] = 0 # Also, get rid of this block that isn't standing on solid ground.
-                    # Then, add a lose tile for that missed block
-                    # Lose tile format is (x, y, color, start time)
-                    lose_tiles.append((x, current_y, pygame.time.get_ticks()))
-
-        current_level += 1
-        check_win_lose()
-    elif game_state == INTRO:
-        game_state = PLAYING
-    elif game_state in (LOSE, WIN):
-        reset_game()
-        game_state = INTRO
-
-def check_win_lose():
-    global game_state, current_x, current_y, current_width, current_level, current_speed, current_direction, keep_running, TILE_COLOR
-
-    if current_width == 0:
-        game_state = LOSE
-    elif current_level == WIN_LEVEL:
-        current_speed = 100
-        game_state = WIN
-    else:
-        current_speed = LEVEL_SPEED[current_level]
-        current_width = min(current_width, MAX_WIDTH[current_level])
-        current_x = randint(0, BOARD_WIDTH - current_width)
-        current_y -= 1
-        current_direction = choice([1, -1])
-
-def update_movement():
-    global game_state, last_time, current_x, current_y, current_width, current_speed, current_direction
-
-    current_time = pygame.time.get_ticks()
-    if last_time + current_speed <= current_time:
-        if game_state == PLAYING:
-            new_x = current_x + current_direction
-
-            if not -current_width < new_x < BOARD_WIDTH:
-                current_direction *= -1
-
-            current_x += current_direction
-
-        last_time = current_time
-
-def update_screen(screen):
-    global game_state
-
-    if game_state == PLAYING:
-        draw_background(screen)
-        draw_board(screen)
-    elif game_state == INTRO:
-        draw_background(screen)
-        pass
-    elif game_state in (LOSE, WIN):
-        screen.fill(BLACK)
-        draw_board(screen)
-        draw_background(screen)
-
-    pygame.display.flip()
-
-def draw_background(screen):
-    global game_state
-    screen.blit(bg_images[game_state], (0, 0, SCREEN_WIDTH,SCREEN_HEIGHT), (0, 0, SCREEN_WIDTH,SCREEN_HEIGHT))
+    def get_time_delta(self):
+        return (pygame.time.get_ticks() - self.time) / 125.0
 
 
-def update_board_info():
-    global game_state
+class Slacker:
+    """"""
+    BOARD_SIZE = BOARD_WIDTH, BOARD_HEIGHT = 7, 15
+    SCREEN_SIZE = SCREEN_WIDTH, SCREEN_HEIGHT = 280, 600
+    TILE_SIZE = TILE_WIDTH, TILE_HEIGHT = 40, 40
 
-    if game_state == PLAYING:
-        clear_row(current_y)
-        fill_current_row()
+    TILE_COLOR = 127, 127, 255
+    TILE_COLOR_ALT = 255, 127, 127
+    TILE_COLOR_LOSE = 64, 64, 128
+    TILE_COLOR_ALT_LOSE = 127, 64, 64
+    BLACK = 0, 0, 0
 
-def draw_board(screen):
-    for x in range(BOARD_WIDTH):
-        for y in range(BOARD_HEIGHT):
-            if board[x][y] == 1:
-                draw_tile(screen, x, y)
+    LEVEL_SPEED = 80, 80, 75, 75, 70, 70, 65, 60, 55, 50, 45, 40, 35, 30, 32
+    MAX_WIDTH = (3,)*4 + (2,)*4 + (1,)*7
 
-    draw_lose_tiles(screen)
+    COLOR_CHANGE_Y = 5  # blocks below which are displayed in the alternate color
+    WIN_LEVEL = 15
+    WIN_SPEED = 100
+    INTRO, PLAYING, LOSE, WIN = range(4)
 
-def draw_tile(screen, x, y):
-    xoffset = 0 # XOffset is used to draw some wiggle in the tower when you win
-    col = TILE_COLOR
-    if y < COLOR_CHANGE_Y:
-        col = TILE_COLOR_ALT
+    BG_IMAGES = [pygame.image.load('data/_{}.png'.format(i))
+                 for i in ('intro', 'game', 'lose', 'win')]
+    BG_IMAGES[WIN].set_colorkey(BLACK)
+    BG_IMAGES[LOSE].set_colorkey(BLACK)
 
-    if game_state == LOSE:
-        col = TILE_COLOR_LOSE
-        if y < COLOR_CHANGE_Y:
-            col = TILE_COLOR_ALT_LOSE
+    def __init__(self):
+        self.board = [[False] * self.BOARD_WIDTH for _ in range(self.BOARD_HEIGHT)]
+        self.direction = choice([1, -1])
+        self.game_state = self.INTRO
+        self.level = 0
+        self.last_time = 0
+        self.missed_tiles = []
+        self.screen = pygame.display.set_mode(self.SCREEN_SIZE)
+        self.speed = self.LEVEL_SPEED[0]
+        self.width = self.MAX_WIDTH[0]
+        self.x = randint(0, self.BOARD_WIDTH - self.width)
+        self.y = self.BOARD_HEIGHT - 1
 
-    if game_state == WIN:
-        xoffset = sin(pygame.time.get_ticks()*0.004 + y*0.5) * (SCREEN_WIDTH / 4)
-
-    pygame.draw.rect(screen, col, (x*TILE_WIDTH + xoffset, y*TILE_HEIGHT, TILE_WIDTH, TILE_HEIGHT))
-    pygame.draw.rect(screen, BLACK, (x*TILE_WIDTH + xoffset, y*TILE_HEIGHT, TILE_WIDTH, TILE_HEIGHT), 2)
-
-# Lose tiles are ones that fall off from the edge when you miss placing them on the proper stack
-def draw_lose_tiles(screen):
-    for lt in lose_tiles:
-        deltaT = (pygame.time.get_ticks() - lt[2]) * 0.008 # How long it has been falling
-        x = lt[0] * TILE_WIDTH
-        y = lt[1]*TILE_HEIGHT + deltaT*deltaT
-
-        col = TILE_COLOR_LOSE
-        if lt[1] < COLOR_CHANGE_Y:
-            col = TILE_COLOR_ALT_LOSE
-
-        if y > SCREEN_HEIGHT:
-            lose_tiles.remove(lt)
+    def draw_tile(self, x, y):
+        if self.game_state == self.LOSE:
+            if y < self.COLOR_CHANGE_Y:
+                color = self.TILE_COLOR_ALT_LOSE
+            else:
+                color = self.TILE_COLOR_LOSE
         else:
-            pygame.draw.rect(screen, col, (x + 2, y + 2, TILE_WIDTH - 3, TILE_HEIGHT - 3))
+            if y < self.COLOR_CHANGE_Y:
+                color = self.TILE_COLOR_ALT
+            else:
+                color = self.TILE_COLOR
 
-def clear_board():
-    global board
-    board = [[0] * BOARD_HEIGHT for _ in range(BOARD_WIDTH)]
+        # XOffset is used to draw some wiggle in the tower when you win
+        if self.game_state == self.WIN:
+            xoffset = (sin(pygame.time.get_ticks()*0.004 + y*0.5)
+                       * (self.SCREEN_WIDTH / 4))
+        else:
+            xoffset = 0
 
-def clear_row(y):
-    for x in range(BOARD_WIDTH): board[x][y] = 0
+        rect = pygame.Rect(x*self.TILE_WIDTH + xoffset, y * self.TILE_HEIGHT,
+                           self.TILE_WIDTH, self.TILE_HEIGHT)
+        pygame.draw.rect(self.screen, color, rect)
+        pygame.draw.rect(self.screen, self.BLACK, rect, 2)
 
-def fill_current_row():
-    global current_x, current_y, current_width
-    for x in range(max(0, current_x), min(current_x + current_width, BOARD_WIDTH)):
-        board[x][current_y] = 1
+    def draw_background(self):
+        self.screen.blit(self.BG_IMAGES[self.game_state],
+                         (0, 0, self.SCREEN_WIDTH, self.SCREEN_HEIGHT))
+
+    def draw_board(self):
+        for x in range(self.BOARD_WIDTH):
+            for y in range(self.BOARD_HEIGHT):
+                if self.board[y][x]: self.draw_tile(x, y)
+
+        # Draw the missed tiles
+        for mt in self.missed_tiles:
+            time_delta = mt.get_time_delta()
+            x = mt.x * self.TILE_WIDTH
+            y = mt.y*self.TILE_HEIGHT + time_delta**2
+
+            if mt.y < self.COLOR_CHANGE_Y:
+                color = self.TILE_COLOR_ALT_LOSE
+            else:
+                color = self.TILE_COLOR_LOSE
+
+            if y > self.SCREEN_HEIGHT:
+                self.missed_tiles.remove(mt)
+            else:
+                pygame.draw.rect(
+                    self.screen, color,
+                    pygame.Rect(x + 2, y + 2, self.TILE_WIDTH - 3, self.TILE_HEIGHT - 3))
+
+    def update_screen(self):
+        if self.game_state == self.PLAYING:
+            self.draw_background()
+            self.draw_board()
+        elif self.game_state == self.INTRO:
+            self.draw_background()
+        elif self.game_state in (self.LOSE, self.WIN):
+            self.screen.fill(self.BLACK)
+            self.draw_board()
+            self.draw_background()
+        pygame.display.flip()
+
+    def update_movement(self):
+        self.time = pygame.time.get_ticks()
+        if self.last_time + self.speed <= self.time:
+            if not -self.width < self.x + self.direction < self.BOARD_WIDTH:
+                self.direction *= -1
+            self.x += self.direction
+            self.last_time = self.time
+        self.board[self.y] = [0 <= x - self.x < self.width
+                              for x in range(self.BOARD_WIDTH)]
+
+    def key_hit(self):
+        if self.y < self.BOARD_HEIGHT - 1:
+            for x in range(max(0, self.x),
+                           min(self.x + self.width, self.BOARD_WIDTH)):
+                # If there isn't any block underneath
+                if not self.board[self.y + 1][x]:
+                    # Get rid of the block not standing on solid ground
+                    self.board[self.y][x] = False
+                    # Then, add that missed block to missed_tiles
+                    self.missed_tiles.append(
+                        SlackerMissedTile(x, self.y, pygame.time.get_ticks()))
+        self.width = sum(self.board[self.y])
+        if not self.width:
+            self.game_state = self.LOSE
+        elif self.level + 1 == self.WIN_LEVEL:
+            self.speed, self.game_state = self.WIN_SPEED, self.WIN
+        else:
+            self.direction = choice([1, -1])
+            self.level += 1
+            self.speed = self.LEVEL_SPEED[self.level]
+            self.x = randint(0, self.BOARD_WIDTH - self.width)
+            self.y -= 1
+
+    def main_loop(self):
+        keep_running = True
+        while keep_running:
+            self.update_screen()
+            if self.game_state == self.INTRO:
+                for event in pygame.event.get():
+                    if event.type == pygame.QUIT:
+                        keep_running = False
+                    elif event.type == KEYDOWN:
+                        if event.key in (K_RETURN, K_SPACE):
+                            self.game_state = self.PLAYING
+                        elif event.key in (K_ESCAPE, K_q):
+                            keep_running = False
+            elif self.game_state == self.PLAYING:
+                for event in pygame.event.get():
+                    if event.type == pygame.QUIT:
+                        keep_running = False
+                    elif event.type == KEYDOWN:
+                        if event.key in (K_RETURN, K_SPACE):
+                            self.key_hit()
+                        elif event.key in (K_ESCAPE, K_q):
+                            self.__init__()
+                        # Yes, this is a cheat.
+                        elif event.key == K_F1 and self.width < self.BOARD_WIDTH:
+                            self.x -= self.direction
+                            self.width += 1
+                self.update_movement()
+            elif self.game_state in (self.LOSE, self.WIN):
+                for event in pygame.event.get():
+                    if event.type == pygame.QUIT:
+                        keep_running = False
+                    elif event.type == KEYDOWN:
+                        self.__init__()
 
 
 if __name__ == '__main__':
-    main()
+    pygame.init()
+    slacker = Slacker()
+    slacker.main_loop()
+    pygame.display.quit()

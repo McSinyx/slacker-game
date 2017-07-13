@@ -6,7 +6,7 @@ with open('README.txt') as f:
 
 setup(
     name='slacker-game',
-    version='1.3.1',
+    version='1.3.2',
     description='A clone of the arcade game Stacker',
     long_description=long_description,
     url='https://github.com/McSinyx/slacker-game',
