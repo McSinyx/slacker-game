@@ -1,7 +1,8 @@
 #!/usr/bin/env python
+# -*- coding: utf-8 -*-
 from setuptools import setup
 
-with open('README.txt') as f:
+with open('README.rst') as f:
     long_description = f.read()
 
 setup(
@@ -17,7 +18,6 @@ setup(
     classifiers=[
         'Development Status :: 4 - Beta',
         'Environment :: MacOS X',
-        'Environment :: MacOS X',
         'Environment :: Win32 (MS Windows)',
         'Environment :: X11 Applications',
         'Intended Audience :: End Users/Desktop',
@@ -27,6 +27,7 @@ setup(
         'Programming Language :: Python',
         'Topic :: Games/Entertainment :: Arcade'],
     keywords='stacker arcade-game pygame-application',
+    packages=['slacker_game'],
     install_requires=['pygame'],
-    data_files=[('data/*', ['slacker-game'])],
-    scripts=['slacker-game'])
+    package_data={'slacker_game': ['*.png', 'VT323-Regular.ttf']},
+    entry_points={'gui_scripts': ['slacker-game = slacker_game:main']})
