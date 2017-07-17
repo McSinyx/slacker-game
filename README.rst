@@ -9,19 +9,15 @@ stacked. As the tower rises, the game will make your tower thinner. You win a
 minor prize at the 10th level (the blocks change color), and if you reach the
 15th level, you will win the major prize. Good luck!
 
-In the arcade version, credits are expensive (often $1 per play), but the
-prizes are excellent (the one that I played let you choose between an iPod, a
-PSP, a DS, or a camcorder). As you might guess, it is an extremely difficult
-game to win. I have made my own version of the game correspondingly hard, so
-that the next time I go back to the restaurant, I will have a better chance to
-win a good prize. Despite the hard nature of the game, I hope will enjoy it,
-and if you wind up practicing with the game and getting so good that you win an
-extra iPod, I wouldn't mind if you sent it my way. :)
-
 This game and the above description was originally written by Clint and
-Jennifer Herron (see credits). I (McSinyx) fork the game to improve the
-codebase, make it more similar to the arcade game and hopefully add more
-features.
+Jennifer Herron. I forked the game to improve the codebase, make it more
+similar to the arcade game and hopefully add more features.
+
+Installation
+------------
+
+**Slacker** can run on both Python 2 and 3. You can install it using ``pip`` or
+run ``./setup.py install --user``.
 
 Control
 -------
@@ -41,7 +37,8 @@ Escape, ``q``
 Credits
 -------
 
-`Version 1.2 and earlier <http://www.pyweek.org/e/LastMinute/>`_:
-
-* Clint "HanClinto" Herron (coding)
-* Jennifer Herron (graphics)
+* `Original version <http://www.pyweek.org/e/LastMinute/>`_ by Clint
+  "HanClinto" Herron (coding) and Jennifer Herron (graphics)
+* `VT323 font <https://fonts.google.com/specimen/VT323>`_ by Peter Hull
+* `Tango color palette <http://tango.freedesktop.org/Tango_Icon_Theme_Guidelines#Color_Palette>`_
+  by Tango Desktop Project
