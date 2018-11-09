@@ -86,7 +86,7 @@ class SlackerTile:
                            (self.y+self.get_yoffset()) * self.SIZE,
                            self.SIZE, self.SIZE)
         pygame.draw.rect(self.screen, color, rect)
-        pygame.draw.rect(self.screen, self.BG, rect, self.SIZE / 11)
+        pygame.draw.rect(self.screen, self.BG, rect, self.SIZE // 11)
 
 
 class Slacker:
@@ -103,6 +103,9 @@ class Slacker:
     ICON = pygame.image.load(data('icon.png'))
 
     MAX_WIDTH = (1,)*7 + (2,)*5 + (3,)*3
+    MAX_SPEED = 70
+    SPEED_DIFF = 5
+    INIT_SPEED = MAX_SPEED + (BOARD_HEIGHT + 1)*SPEED_DIFF
     COLOR_CHANGE_Y = 5  # blocks below which are displayed in the alternate color
     WIN_LEVEL = 15
     WIN_SPEED = 100
@@ -116,7 +119,7 @@ class Slacker:
         self.game_state = self.PLAYING if restart else self.INTRO
         self.falling_tiles = []
         self.screen = pygame.display.set_mode(self.SCREEN_SIZE)
-        self.speed = 84 + randrange(5)
+        self.speed = self.INIT_SPEED + randrange(5)
         self.speed_ratio = 1.0
         self.width = self.MAX_WIDTH[-1]
         self.y = self.BOARD_HEIGHT - 1
@@ -194,7 +197,7 @@ class Slacker:
         else:
             self.y -= 1
             self.width = min(self.width, self.MAX_WIDTH[self.y])
-            self.speed = 42 + self.y*3 + randrange(5)
+            self.speed = self.MAX_SPEED + self.y*self.SPEED_DIFF + randrange(5)
 
     def main_loop(self, loop=True):
         """The main loop."""

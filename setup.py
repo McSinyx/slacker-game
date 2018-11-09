@@ -7,7 +7,7 @@ with open('README.rst') as f:
 
 setup(
     name='slacker-game',
-    version='2.0.1',
+    version='2.0.2',
     description='A clone of the arcade game Stacker',
     long_description=long_description,
     url='https://github.com/McSinyx/slacker-game',
@@ -29,5 +29,5 @@ setup(
     keywords='stacker arcade-game pygame-application',
     packages=['slacker_game'],
     install_requires=['pygame'],
-    package_data={'slacker_game': ['VT323-Regular.ttf']},
+    package_data={'slacker_game': ['VT323-Regular.ttf', 'icon.png']},
     entry_points={'gui_scripts': ['slacker-game = slacker_game:main']})
